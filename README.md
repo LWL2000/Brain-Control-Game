@@ -4,6 +4,7 @@
 
 ![脑控小游戏合集界面](assets/screenshots/mini-games-hub.png)
 
+
 ## 功能概览
 
 - 单通道脑电数据采集：BLE 端接收脑电数据并发布 LSL 流。
