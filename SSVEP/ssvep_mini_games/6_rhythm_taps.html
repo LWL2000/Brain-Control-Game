@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>节奏音符 - SSVEP小游戏</title>
+    <link rel="stylesheet" href="common.css">
+</head>
+<body class="game-page">
+    <main class="game-shell">
+        <header class="top-bar">
+            <div class="title-block">
+                <a class="back-link" href="index.html">返回合集</a>
+                <h1 class="game-title" id="gameTitle">节奏音符</h1>
+                <p class="game-subtitle" id="gameSubtitle"></p>
+            </div>
+            <div class="hud" id="hud"></div>
+        </header>
+        <section class="canvas-wrap">
+            <canvas id="gameCanvas" width="900" height="620"></canvas>
+            <div class="overlay" id="overlay">
+                <div class="overlay-panel">
+                    <h2 class="overlay-title" id="overlayTitle"></h2>
+                    <p class="overlay-text" id="overlayText"></p>
+                    <button class="primary-button" id="overlayButton" type="button">开始</button>
+                </div>
+            </div>
+        </section>
+        <footer class="control-bar">
+            <div class="command-pills" id="commandPills"></div>
+            <select class="profile-select" id="profileSelect" aria-label="命令映射"></select>
+            <div class="connection" id="connection" data-state="closed">WebSocket 未连接</div>
+        </footer>
+    </main>
+    <script>window.GAME_ID = "rhythm_taps";</script>
+    <script src="ssvep_input.js"></script>
+    <script src="game_app.js"></script>
+</body>
+</html>

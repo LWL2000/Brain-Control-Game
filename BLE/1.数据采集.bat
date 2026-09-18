@@ -1,0 +1,2 @@
+python ble_reciveSINGLE2.py
+cmd

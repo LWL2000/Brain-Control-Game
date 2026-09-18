@@ -1,0 +1,1207 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>打砖块游戏</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .game-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            animation: pulse 5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.01); }
+            100% { transform: scale(1); }
+        }
+        
+        .game-title {
+            color: white;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 32px;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.3);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes glow {
+            from { text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #e60073, 0 0 40px #e60073; }
+            to { text-shadow: 0 0 20px #fff, 0 0 30px #ff4da6, 0 0 40px #ff4da6, 0 0 50px #ff4da6; }
+        }
+        
+        .game-canvas {
+            border-radius: 10px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+            background: linear-gradient(to bottom, #1a1a2e, #16213e);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: white;
+        }
+        
+        .info-item {
+            display: flex;
+            align-items: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .info-value {
+            margin-left: 8px;
+            color: #f39c12;
+        }
+        
+        .combo-status {
+            color: #e74c3c;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .message-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 10;
+        }
+        
+        .message-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            color: white;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .message-title {
+            font-size: 36px;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .message-score {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        
+        .game-button {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(243, 156, 18, 0.4);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .game-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(243, 156, 18, 0.6);
+        }
+        
+        .game-button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 10px rgba(243, 156, 18, 0.4);
+        }
+        
+        .next-level-button {
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+            box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4);
+        }
+        
+        .next-level-button:hover {
+            box-shadow: 0 6px 20px rgba(46, 204, 113, 0.6);
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .game-container {
+                padding: 15px;
+            }
+            
+            .game-title {
+                font-size: 24px;
+            }
+            
+            .game-canvas {
+                width: 100%;
+                height: auto;
+            }
+            
+            .game-info {
+                flex-wrap: wrap;
+                gap: 10px;
+                justify-content: center;
+            }
+            
+            .info-item {
+                font-size: 16px;
+            }
+            
+            .message-title {
+                font-size: 28px;
+            }
+            
+            .game-button {
+                padding: 12px 24px;
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1 class="game-title">打砖块游戏</h1>
+        <canvas id="gameCanvas" class="game-canvas" width="800" height="600"></canvas>
+        <div class="game-info">
+            <div class="info-item">分数: <span class="info-value" id="score">0</span></div>
+            <div class="info-item">生命: <span class="info-value" id="lives">3</span></div>
+            <div class="info-item">关卡: <span class="info-value" id="level">1</span></div>
+            <div class="info-item">最高分: <span class="info-value" id="highScore">0</span></div>
+            <div class="info-item combo-status">连击: <span class="info-value" id="combo">0</span></div>
+        </div>
+    </div>
+    
+    <!-- 开始游戏消息 -->
+    <div id="startMessage" class="message-overlay">
+        <div class="message-box">
+            <h2 class="message-title">准备开始!</h2>
+            <p style="margin-bottom: 20px;">使用左右箭头键控制挡板<br>按空格键发射子弹（自动发射已启用）</p>
+            <button id="startButton" class="game-button">开始游戏</button>
+        </div>
+    </div>
+    
+    <!-- 游戏结束消息 -->
+    <div id="gameOverMessage" class="message-overlay" style="display: none;">
+        <div class="message-box">
+            <h2 class="message-title">游戏结束</h2>
+            <p class="message-score">最终得分: <span id="finalScore">0</span></p>
+            <button id="restartButton" class="game-button">再来一次</button>
+        </div>
+    </div>
+    
+    <!-- 关卡完成消息 -->
+    <div id="levelCompleteMessage" class="message-overlay" style="display: none;">
+        <div class="message-box">
+            <h2 class="message-title">关卡完成!</h2>
+            <button id="nextLevelButton" class="game-button next-level-button">下一关</button>
+        </div>
+    </div>
+    
+    <script>
+        // 游戏常量
+        const CANVAS_WIDTH = 800;
+        const CANVAS_HEIGHT = 600;
+        const PADDLE_WIDTH = 100;
+        const PADDLE_HEIGHT = 20;
+        const BALL_RADIUS = 10; // 保留球的定义，即使不再使用
+        const BRICK_WIDTH = 75;
+        const BRICK_HEIGHT = 20;
+        const BRICK_PADDING = 10;
+        const BRICK_OFFSET_TOP = 60;
+        const BRICK_OFFSET_LEFT = 35;
+        const BRICK_ROWS = 5;
+        const BRICK_COLS = 9;
+        const BALL_SPEED = 5; // 保留球速定义，便于参考
+        const PADDLE_SPEED = 8;
+        const COLORS = ['#e74c3c', '#f39c12', '#f1c40f', '#2ecc71', '#3498db'];
+        
+        // 子弹相关常量
+        const BULLET_WIDTH = 6;
+        const BULLET_HEIGHT = 12;
+        const BULLET_SPEED = 10;
+        const BULLET_COLOR = '#ecf0f1';
+        const FIRE_COOLDOWN = 300; // 发射冷却时间（毫秒）
+        
+        // 已移除道具系统
+
+        // 游戏状态变量
+        let canvas, ctx;
+        let paddle = { x: CANVAS_WIDTH / 2 - PADDLE_WIDTH / 2, y: CANVAS_HEIGHT - 30, dx: 0, originalWidth: PADDLE_WIDTH };
+        // 保留ball对象但不再使用其物理特性
+        let ball = { 
+            x: CANVAS_WIDTH / 2, 
+            y: CANVAS_HEIGHT - 40, 
+            dx: 0, 
+            dy: 0 
+        };
+        let bricks = [];
+        let score = 0;
+        let lives = 3;
+        let level = 1;
+        let gameState = 'ready'; // 'ready', 'playing', 'paused', 'gameOver', 'levelComplete'
+        let highScore = localStorage.getItem('breakoutHighScore') || 0;
+        let comboCount = 0;
+        let lastBrickHitTime = 0;
+        let particles = []; // 粒子效果数组
+        
+        // 子弹相关变量
+        let bullets = []; // 子弹数组
+        let lastFireTime = 0; // 上次发射时间
+        let canFire = true; // 是否可以发射
+        let originalFireCooldown = FIRE_COOLDOWN; // 保存原始冷却时间
+        
+        // 已移除道具相关变量
+        
+        // 音效系统
+        const sounds = {
+            brickHit: function() { playSound('sine', 440 + Math.random() * 220, 0.1); },
+            paddleHit: function() { playSound('square', 220 + Math.random() * 110, 0.15); },
+            wallHit: function() { playSound('triangle', 330 + Math.random() * 110, 0.08); },
+            levelComplete: function() { 
+                playSound('sine', 440, 0.2);
+                setTimeout(() => playSound('sine', 880, 0.3), 200);
+            },
+            gameOver: function() { playSound('sawtooth', 220, 0.5); },
+            combo: function() { playSound('sine', 880 + comboCount * 100, 0.2); },
+            shoot: function() { playSound('square', 660 + Math.random() * 50, 0.05); }
+        };
+        
+        // 发射子弹函数
+        function fireBullet() {
+            const currentTime = Date.now();
+            if (gameState === 'playing' && canFire && (currentTime - lastFireTime > FIRE_COOLDOWN)) {
+                // 创建两个子弹，从挡板两侧发射
+                const leftBullet = {
+                    x: paddle.x + PADDLE_WIDTH * 0.3 - BULLET_WIDTH / 2,
+                    y: paddle.y - BULLET_HEIGHT,
+                    dy: -BULLET_SPEED
+                };
+                
+                const rightBullet = {
+                    x: paddle.x + PADDLE_WIDTH * 0.7 - BULLET_WIDTH / 2,
+                    y: paddle.y - BULLET_HEIGHT,
+                    dy: -BULLET_SPEED
+                };
+                
+                bullets.push(leftBullet);
+                bullets.push(rightBullet);
+                
+                // 更新发射时间并播放音效
+                lastFireTime = currentTime;
+                sounds.shoot();
+                
+                // 添加发射时的微小震动反馈
+                const originalX = paddle.x;
+                paddle.x -= 1;
+                setTimeout(() => {
+                    paddle.x += 2;
+                    setTimeout(() => {
+                        paddle.x = originalX;
+                    }, 20);
+                }, 20);
+                
+                // 设置冷却时间
+                canFire = false;
+                setTimeout(() => {
+                    canFire = true;
+                }, FIRE_COOLDOWN);
+            }
+        }
+
+        // DOM元素
+        let startMessage, gameOverMessage, levelCompleteMessage;
+        let scoreElement, livesElement, levelElement, finalScoreElement, highScoreElement, comboElement;
+        let startButton, restartButton, nextLevelButton;
+
+        // 音效生成函数
+        function playSound(type, frequency, duration) {
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (!AudioContext) return;
+                
+                const audioCtx = new AudioContext();
+                
+                // 确保在用户交互后恢复音频上下文
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+                
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                
+                oscillator.type = type;
+                oscillator.frequency.value = frequency;
+                
+                // 设置音量包络，避免爆音
+                gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                
+                oscillator.start();
+                oscillator.stop(audioCtx.currentTime + duration);
+            } catch (e) {
+                // 忽略音效错误，不影响游戏进行
+            }
+        }
+        
+        // 创建粒子效果
+        function createParticles(x, y, color, count = 10) {
+            for (let i = 0; i < count; i++) {
+                particles.push({
+                    x: x,
+                    y: y,
+                    dx: (Math.random() - 0.5) * 5,
+                    dy: (Math.random() - 0.5) * 5,
+                    radius: Math.random() * 3 + 1,
+                    color: color,
+                    alpha: 1,
+                    decay: 0.05
+                });
+            }
+        }
+        
+        // 更新粒子效果
+        function updateParticles() {
+            for (let i = 0; i < particles.length; i++) {
+                const p = particles[i];
+                p.x += p.dx;
+                p.y += p.dy;
+                p.alpha -= p.decay;
+                
+                if (p.alpha <= 0) {
+                    particles.splice(i, 1);
+                    i--;
+                }
+            }
+        }
+        
+        // 绘制粒子效果
+        function drawParticles() {
+            for (let i = 0; i < particles.length; i++) {
+                const p = particles[i];
+                ctx.save();
+                ctx.globalAlpha = p.alpha;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fillStyle = p.color;
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+        
+        // 初始化游戏
+        function initGame() {
+            canvas = document.getElementById('gameCanvas');
+            ctx = canvas.getContext('2d');
+            
+            // 添加指令接收功能
+            initCommandReceiver();
+            
+            // 获取DOM元素
+            startMessage = document.getElementById('startMessage');
+            gameOverMessage = document.getElementById('gameOverMessage');
+            levelCompleteMessage = document.getElementById('levelCompleteMessage');
+            
+            scoreElement = document.getElementById('score');
+            livesElement = document.getElementById('lives');
+            levelElement = document.getElementById('level');
+            finalScoreElement = document.getElementById('finalScore');
+            highScoreElement = document.getElementById('highScore');
+            comboElement = document.getElementById('combo');
+            
+            // 更新最高分显示
+            highScoreElement.textContent = highScore;
+            
+            startButton = document.getElementById('startButton');
+            restartButton = document.getElementById('restartButton');
+            nextLevelButton = document.getElementById('nextLevelButton');
+            
+            // 添加事件监听器
+            startButton.addEventListener('click', startGame);
+            restartButton.addEventListener('click', restartGame);
+            nextLevelButton.addEventListener('click', goToNextLevel);
+            
+            document.addEventListener('keydown', handleKeyDown);
+            document.addEventListener('keyup', handleKeyUp);
+            
+            // 初始化砖块
+            initBricks();
+            
+            // 初始渲染
+            draw();
+        }
+        
+        // 初始化砖块
+        function initBricks() {
+            bricks = [];
+            
+            for (let r = 0; r < BRICK_ROWS; r++) {
+                bricks[r] = [];
+                for (let c = 0; c < BRICK_COLS; c++) {
+                    const brickX = c * (BRICK_WIDTH + BRICK_PADDING) + BRICK_OFFSET_LEFT;
+                    const brickY = r * (BRICK_HEIGHT + BRICK_PADDING) + BRICK_OFFSET_TOP;
+                    
+                    bricks[r][c] = {
+                        x: brickX, 
+                        y: brickY, 
+                        status: 1, 
+                        color: COLORS[r % COLORS.length]
+                    };
+                }
+            }
+        }
+        
+        // 开始游戏
+        function startGame() {
+            gameState = 'playing';
+            startMessage.style.display = 'none';
+            sounds.paddleHit(); // 播放开始游戏音效
+            showBulletInstructions(); // 显示子弹使用说明
+            animate();
+        }
+        
+        // 重新开始游戏
+        function restartGame() {
+            score = 0;
+            lives = 3;
+            level = 1;
+            comboCount = 0;
+            gameState = 'playing';
+            updateScore();
+            updateLives();
+            updateLevel();
+            updateCombo();
+            resetPaddleAndBall();
+            initBricks();
+            gameOverMessage.style.display = 'none';
+            animate();
+        }
+        
+        // 进入下一关
+        function goToNextLevel() {
+            level++;
+            comboCount = 0;
+            gameState = 'playing';
+            updateLevel();
+            updateCombo();
+            resetPaddleAndBall();
+            initBricks();
+            levelCompleteMessage.style.display = 'none';
+            
+            // 调整球速，随关卡增加难度
+            const speedFactor = 1 + (level - 1) * 0.1;
+            const currentSpeed = Math.sqrt(ball.dx * ball.dx + ball.dy * ball.dy);
+            const newSpeed = currentSpeed * speedFactor;
+            const angle = Math.atan2(ball.dy, ball.dx);
+            ball.dx = Math.cos(angle) * newSpeed;
+            ball.dy = Math.sin(angle) * newSpeed;
+            
+            animate();
+        }
+        
+        // 重置挡板和球的位置
+        function resetPaddleAndBall() {
+            paddle.x = CANVAS_WIDTH / 2 - PADDLE_WIDTH / 2;
+            paddle.dx = 0;
+            ball.x = CANVAS_WIDTH / 2;
+            ball.y = CANVAS_HEIGHT - 40;
+            ball.dx = BALL_SPEED * (Math.random() > 0.5 ? 1 : -1);
+            ball.dy = -BALL_SPEED;
+        }
+        
+        // 从外部接收命令的函数
+        function receiveExternalCommand(command) {
+            console.log('收到外部命令:', command);
+            
+            // 确保游戏在运行状态
+            if (gameState !== 'playing') {
+                // 如果游戏还没开始，可以自动开始
+                if (gameState === 'ready') {
+                    startGame();
+                }
+                return;
+            }
+            
+            // SSVEP固定映射：1=左，2=动作/发射，3=右
+            switch(command) {
+                case '1':
+                    // 向左移动
+                    paddle.dx = -PADDLE_SPEED;
+                    setTimeout(() => {
+                        if (paddle.dx === -PADDLE_SPEED) { // 如果没有被其他操作覆盖
+                            paddle.dx = 0;
+                        }
+                    }, 300); // 短暂移动后停止
+                    break;
+                case '2':
+                    // 动作：发射子弹
+                    fireBullet();
+                    break;
+                case '3':
+                    // 向右移动
+                    paddle.dx = PADDLE_SPEED;
+                    setTimeout(() => {
+                        if (paddle.dx === PADDLE_SPEED) { // 如果没有被其他操作覆盖
+                            paddle.dx = 0;
+                        }
+                    }, 300); // 短暂移动后停止
+                    break;
+            }
+        }
+        
+        // 初始化WebSocket连接
+        function initCommandReceiver() {
+            let socket = null;
+            
+            // WebSocket连接函数
+            function connectWebSocket() {
+                try {
+                    // 连接到WebSocket服务器（Python程序将运行服务器）
+                    socket = new WebSocket('ws://localhost:8767');
+                    
+                    // 连接打开事件
+                    socket.onopen = function(event) {
+                        console.log('WebSocket连接已建立');
+                        // 发送一个消息表示客户端已连接
+                        socket.send('client_connected');
+                    };
+                    
+                    // 接收消息事件
+                    socket.onmessage = function(event) {
+                        console.log('收到WebSocket消息:', event.data);
+                        // 处理接收到的命令
+                        receiveExternalCommand(event.data);
+                    };
+                    
+                    // 连接关闭事件
+                    socket.onclose = function(event) {
+                        console.log('WebSocket连接已关闭，将在5秒后重连...');
+                        // 尝试重连
+                        setTimeout(connectWebSocket, 5000);
+                    };
+                    
+                    // 错误事件
+                    socket.onerror = function(error) {
+                        console.error('WebSocket错误:', error);
+                    };
+                    
+                } catch (error) {
+                    console.error('WebSocket连接失败:', error);
+                    // 尝试重连
+                    setTimeout(connectWebSocket, 5000);
+                }
+            }
+            
+            // 发送消息到服务器的函数（供外部使用）
+            window.sendMessageToServer = function(message) {
+                if (socket && socket.readyState === WebSocket.OPEN) {
+                    socket.send(message);
+                    return true;
+                }
+                return false;
+            };
+            
+            // 启动WebSocket连接
+            connectWebSocket();
+            
+            console.log('WebSocket命令接收器已初始化，可以接收命令: 1(左移), 2(动作/发射), 3(右移)');
+        }
+        
+        // 处理键盘按下事件
+        function handleKeyDown(e) {
+            if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+                paddle.dx = -PADDLE_SPEED;
+            } else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+                paddle.dx = PADDLE_SPEED;
+            } else if (e.key === ' ' || e.key === 'Spacebar' || e.key === 'Enter') {
+                e.preventDefault(); // 防止空格键滚动页面
+                if (gameState === 'ready') {
+                    startGame();
+                } else if (gameState === 'paused') {
+                    gameState = 'playing';
+                    animate();
+                } else if (gameState === 'gameOver' || gameState === 'levelComplete') {
+                    restartGame();
+                } else if (gameState === 'playing') {
+                    // 空格键手动发射子弹
+                    fireBullet();
+                }
+            } else if (e.key === 'p' || e.key === 'P' || e.key === 'Escape') {
+                e.preventDefault();
+                if (gameState === 'playing') {
+                    gameState = 'paused';
+                } else if (gameState === 'paused') {
+                    gameState = 'playing';
+                    animate();
+                }
+            }
+        }
+        
+        // 处理键盘释放事件
+        function handleKeyUp(e) {
+            if ((e.key === 'ArrowRight' || e.key === 'Right') && paddle.dx > 0) {
+                paddle.dx = 0;
+            } else if ((e.key === 'ArrowLeft' || e.key === 'Left') && paddle.dx < 0) {
+                paddle.dx = 0;
+            }
+        }
+        
+        // 更新挡板宽度属性（确保始终存在）
+        paddle.width = paddle.originalWidth;
+        
+        // 极端简化的游戏更新函数 - 只关注子弹和砖块碰撞
+        function update() {
+            if (gameState !== 'playing') return;
+            
+            // 更新挡板位置
+            paddle.x += paddle.dx;
+            if (paddle.x < 0) {
+                paddle.x = 0;
+            } else if (paddle.x + paddle.width > CANVAS_WIDTH) {
+                paddle.x = CANVAS_WIDTH - paddle.width;
+            }
+            
+            // 已移除道具更新功能
+            
+            // 更新子弹位置 - 直接在这里处理，不再调用updateBullets
+            for (let i = bullets.length - 1; i >= 0; i--) {
+                const bullet = bullets[i];
+                bullet.y += bullet.dy;
+                
+                // 如果子弹移出屏幕，移除它
+                if (bullet.y < -BULLET_HEIGHT) {
+                    bullets.splice(i, 1);
+                    continue;
+                }
+                
+                // 直接在这里进行碰撞检测
+                let hitBrick = false;
+                
+                // 检查所有砖块
+                for (let r = 0; r < BRICK_ROWS && !hitBrick; r++) {
+                    for (let c = 0; c < BRICK_COLS && !hitBrick; c++) {
+                        const brick = bricks[r][c];
+                        
+                        // 只检查活动的砖块
+                        if (brick.status === 1) {
+                            // 非常宽松的碰撞检测
+                            if (bullet.x + BULLET_WIDTH >= brick.x && 
+                                bullet.x <= brick.x + BRICK_WIDTH && 
+                                bullet.y + BULLET_HEIGHT >= brick.y && 
+                                bullet.y <= brick.y + BRICK_HEIGHT) {
+                                
+                                // 移除子弹
+                                bullets.splice(i, 1);
+                                
+                                // 标记砖块为已摧毁
+                                brick.status = 0;
+                                
+                                // 已移除道具掉落功能
+                                
+                                // 更新分数
+                                score += 10;
+                                updateScore();
+                                
+                                // 播放音效
+                                sounds.brickHit();
+                                
+                                // 创建粒子效果
+                                createParticles(brick.x + BRICK_WIDTH/2, brick.y + BRICK_HEIGHT/2, brick.color);
+                                
+                                hitBrick = true;
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // 检查是否所有砖块都被消除
+            let allDestroyed = true;
+            for (let r = 0; r < BRICK_ROWS; r++) {
+                for (let c = 0; c < BRICK_COLS; c++) {
+                    if (bricks[r][c].status === 1) {
+                        allDestroyed = false;
+                        break;
+                    }
+                }
+                if (!allDestroyed) break;
+            }
+            
+            if (allDestroyed) {
+                levelComplete();
+            }
+            
+            // 移除自动发射子弹的逻辑，现在只通过命令3或空格键发射子弹
+        }
+        
+        // 绘制游戏画面
+        function draw() {
+            // 清空画布
+            ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+            
+            // 更新和绘制粒子效果
+            updateParticles();
+            drawParticles();
+            
+            // 绘制砖块
+            drawBricks();
+            
+            // 绘制挡板
+            drawPaddle();
+            
+            // 绘制子弹
+            drawBullets();
+            
+            // 绘制游戏状态信息
+            drawStatus();
+        }
+        
+        // 绘制挡板
+        function drawPaddle() {
+            ctx.beginPath();
+            ctx.rect(paddle.x, paddle.y, PADDLE_WIDTH, PADDLE_HEIGHT);
+            ctx.fillStyle = '#f39c12';
+            // 添加渐变效果
+            const gradient = ctx.createLinearGradient(paddle.x, paddle.y, paddle.x, paddle.y + PADDLE_HEIGHT);
+            gradient.addColorStop(0, '#f39c12');
+            gradient.addColorStop(1, '#e67e22');
+            ctx.fillStyle = gradient;
+            ctx.fill();
+            ctx.closePath();
+            
+            // 添加边框
+            ctx.beginPath();
+            ctx.rect(paddle.x, paddle.y, PADDLE_WIDTH, PADDLE_HEIGHT);
+            ctx.strokeStyle = '#d35400';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            ctx.closePath();
+        }
+        
+        // 绘制球（保留但不再使用）
+        function drawBall() {
+            // 隐藏球的绘制，但保留函数以避免引用错误
+            /*ctx.beginPath();
+            ctx.arc(ball.x, ball.y, BALL_RADIUS, 0, Math.PI * 2);
+            // 添加渐变效果
+            const gradient = ctx.createRadialGradient(ball.x - BALL_RADIUS/3, ball.y - BALL_RADIUS/3, BALL_RADIUS/5, ball.x, ball.y, BALL_RADIUS);
+            gradient.addColorStop(0, '#ecf0f1');
+            gradient.addColorStop(1, '#bdc3c7');
+            ctx.fillStyle = gradient;
+            ctx.fill();
+            ctx.closePath();
+            
+            // 添加边框
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, BALL_RADIUS, 0, Math.PI * 2);
+            ctx.strokeStyle = '#95a5a6';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            ctx.closePath();*/
+        }
+        
+        // 更新子弹位置
+        function updateBullets() {
+            for (let i = bullets.length - 1; i >= 0; i--) {
+                const bullet = bullets[i];
+                bullet.y += bullet.dy;
+                
+                // 移除超出屏幕的子弹
+                if (bullet.y < -BULLET_HEIGHT) {
+                    bullets.splice(i, 1);
+                }
+            }
+        }
+        
+        // 绘制子弹
+        function drawBullets() {
+            for (let i = 0; i < bullets.length; i++) {
+                const bullet = bullets[i];
+                ctx.beginPath();
+                ctx.rect(bullet.x, bullet.y, BULLET_WIDTH, BULLET_HEIGHT);
+                
+                // 添加渐变效果
+                const gradient = ctx.createLinearGradient(bullet.x, bullet.y, bullet.x + BULLET_WIDTH, bullet.y + BULLET_HEIGHT);
+                gradient.addColorStop(0, shadeColor(BULLET_COLOR, 20));
+                gradient.addColorStop(1, BULLET_COLOR);
+                ctx.fillStyle = gradient;
+                ctx.fill();
+                ctx.closePath();
+                
+                // 添加边框
+                ctx.beginPath();
+                ctx.rect(bullet.x, bullet.y, BULLET_WIDTH, BULLET_HEIGHT);
+                ctx.strokeStyle = shadeColor(BULLET_COLOR, -20);
+                ctx.lineWidth = 1;
+                ctx.stroke();
+                ctx.closePath();
+            }
+        }
+        
+        // 绘制砖块
+        function drawBricks() {
+            for (let r = 0; r < BRICK_ROWS; r++) {
+                for (let c = 0; c < BRICK_COLS; c++) {
+                    const brick = bricks[r][c];
+                    if (brick.status === 1) {
+                        ctx.beginPath();
+                        ctx.rect(brick.x, brick.y, BRICK_WIDTH, BRICK_HEIGHT);
+                        // 添加渐变效果
+                        const gradient = ctx.createLinearGradient(brick.x, brick.y, brick.x, brick.y + BRICK_HEIGHT);
+                        gradient.addColorStop(0, shadeColor(brick.color, 20));
+                        gradient.addColorStop(1, brick.color);
+                        ctx.fillStyle = gradient;
+                        ctx.fill();
+                        ctx.closePath();
+                        
+                        // 添加边框
+                        ctx.beginPath();
+                        ctx.rect(brick.x, brick.y, BRICK_WIDTH, BRICK_HEIGHT);
+                        ctx.strokeStyle = shadeColor(brick.color, -20);
+                        ctx.lineWidth = 1;
+                        ctx.stroke();
+                        ctx.closePath();
+                        
+                        // 已移除道具标记
+                    }
+                }
+            }
+        }
+        
+        // 道具函数已移除
+        
+        // 道具函数已移除
+        
+        // 道具函数已移除
+        
+        // 道具函数已移除
+        
+        // 道具函数已移除
+        
+        // 绘制游戏状态信息
+        function drawStatus() {
+            // 如果游戏暂停，显示暂停信息
+            if (gameState === 'paused') {
+                ctx.save();
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+                ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+                ctx.font = 'bold 48px Arial';
+                ctx.fillStyle = 'white';
+                ctx.textAlign = 'center';
+                ctx.fillText('暂停', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
+                ctx.font = '24px Arial';
+                ctx.fillText('按空格键继续', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 50);
+                ctx.restore();
+            }
+        }
+        
+        // 显示临时消息
+        function showMessage(text, x, y, color, duration) {
+            const message = { text, x, y, color, duration, startTime: Date.now() };
+            
+            // 绘制消息
+            const drawMessage = () => {
+                const elapsed = Date.now() - message.startTime;
+                if (elapsed < message.duration) {
+                    ctx.save();
+                    ctx.font = 'bold 30px Arial';
+                    ctx.fillStyle = message.color;
+                    ctx.textAlign = 'center';
+                    // 淡出效果和上浮动画
+                    const alpha = 1 - (elapsed / message.duration);
+                    const yOffset = -elapsed / 3;
+                    ctx.globalAlpha = alpha;
+                    ctx.fillText(message.text, message.x, message.y + yOffset);
+                    ctx.restore();
+                    requestAnimationFrame(drawMessage);
+                }
+            };
+            
+            drawMessage();
+        }
+        
+        // 游戏开始时显示子弹系统说明
+          function showBulletInstructions() {
+              showMessage('使用空格键发射子弹！', 3000);
+              setTimeout(() => {
+                  showMessage('子弹也会自动发射...', 3000);
+              }, 3500);
+          }
+          
+          // 子弹击中特效（直接在checkBulletBrickCollision中使用createParticles）
+        
+        // 添加全局调试标志
+        let debugMode = true; // 启用调试模式
+        
+        // 添加调试信息显示函数
+        function drawDebugInfo() {
+            ctx.fillStyle = 'white';
+            ctx.font = '12px Arial';
+            
+            // 显示子弹数量
+            ctx.fillText('子弹数量: ' + bullets.length, 10, 20);
+            
+            // 显示第一个子弹的位置信息
+            if (bullets.length > 0) {
+                const bullet = bullets[0];
+                ctx.fillText('子弹位置: (' + Math.round(bullet.x) + ',' + Math.round(bullet.y) + ')', 10, 40);
+                ctx.fillText('子弹速度: ' + bullet.speed, 10, 60);
+            }
+            
+            // 显示第一个砖块的位置信息
+            if (bricks.length > 0 && bricks[0].length > 0) {
+                const brick = bricks[0][0];
+                ctx.fillText('砖块位置: (' + Math.round(brick.x) + ',' + Math.round(brick.y) + ')', 10, 80);
+                ctx.fillText('砖块状态: ' + brick.status, 10, 100);
+            }
+        }
+        
+        // 修改draw函数，添加调试信息显示
+        function draw() {
+            // 清空画布
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 绘制游戏元素
+            drawBricks();
+            drawPaddle();
+            drawBullets();
+            
+            // 绘制粒子效果
+            drawParticles();
+            
+            // 绘制调试信息
+            if (debugMode) {
+                drawDebugInfo();
+            }
+            
+            // 绘制游戏状态信息
+            drawStatus();
+        }
+        
+        // 重写碰撞检测函数为超简化版本
+        function checkBulletBrickCollision() {
+            // 超简化的碰撞检测 - 几乎任何接触都会触发
+            for (let i = bullets.length - 1; i >= 0; i--) {
+                const bullet = bullets[i];
+                
+                // 让子弹看起来更大（在视觉上）
+                ctx.strokeStyle = 'yellow';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(bullet.x - 5, bullet.y - 5, BULLET_WIDTH + 10, BULLET_HEIGHT + 10);
+                
+                // 检查每个砖块 - 但使用一个简化的方法
+                // 只检查屏幕上半部分的砖块
+                for (let r = 0; r < BRICK_ROWS; r++) {
+                    for (let c = 0; c < BRICK_COLS; c++) {
+                        const brick = bricks[r][c];
+                        
+                        // 只考虑活动砖块
+                        if (brick.status === 1) {
+                            // 绘制砖块边界用于调试
+                            ctx.strokeStyle = 'green';
+                            ctx.lineWidth = 1;
+                            ctx.strokeRect(brick.x, brick.y, BRICK_WIDTH, BRICK_HEIGHT);
+                            
+                            // 非常宽松的碰撞检测条件
+                            // 只要子弹在砖块的大致区域内就视为击中
+                            const isNearBrick = Math.abs(bullet.x - (brick.x + BRICK_WIDTH/2)) < BRICK_WIDTH/2 + 10 &&
+                                              Math.abs(bullet.y - (brick.y + BRICK_HEIGHT/2)) < BRICK_HEIGHT/2 + 10;
+                            
+                            if (isNearBrick) {
+                                console.log('击中砖块!', r, c);
+                                console.log('子弹位置:', bullet.x, bullet.y);
+                                console.log('砖块位置:', brick.x, brick.y);
+                                
+                                // 确保子弹被移除
+                                bullets.splice(i, 1);
+                                
+                                // 确保砖块被摧毁
+                                brick.status = 0;
+                                
+                                // 更新分数
+                                score += 10;
+                                updateScore();
+                                
+                                // 播放音效
+                                if (soundEnabled) {
+                                    sounds.brickHit();
+                                }
+                                
+                                // 跳出循环
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // 检查关卡完成
+            let allDestroyed = true;
+            for (let r = 0; r < BRICK_ROWS; r++) {
+                for (let c = 0; c < BRICK_COLS; c++) {
+                    if (bricks[r][c].status === 1) {
+                        allDestroyed = false;
+                        break;
+                    }
+                }
+                if (!allDestroyed) break;
+            }
+            
+            if (allDestroyed) {
+                levelComplete();
+            }
+        }
+        
+        // 旧的球与砖块碰撞检测（保留但不再使用）
+        function checkBrickCollision() {
+            // 此函数不再使用，但保留以避免引用错误
+        }
+        
+        // 游戏结束
+        function gameOver() {
+            gameState = 'gameOver';
+            sounds.gameOver(); // 播放游戏结束音效
+            
+            // 创建爆炸粒子效果
+            for (let i = 0; i < 30; i++) {
+                createParticles(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2, '#e74c3c', 3);
+            }
+            
+            // 更新最高分
+            if (score > highScore) {
+                highScore = score;
+                localStorage.setItem('breakoutHighScore', highScore);
+                highScoreElement.textContent = highScore;
+                showMessage('新纪录!', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 - 50, 'rgba(241, 196, 15, 0.9)', 3000);
+            }
+            
+            finalScoreElement.textContent = score;
+            gameOverMessage.style.display = 'block';
+        }
+        
+        // 关卡完成
+        function levelComplete() {
+            gameState = 'levelComplete';
+            sounds.levelComplete(); // 播放关卡完成音效
+            
+            // 创建庆祝粒子效果
+            for (let i = 0; i < 50; i++) {
+                createParticles(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2, '#2ecc71', 2);
+            }
+            
+            // 显示关卡完成奖励分数
+            const bonusPoints = level * 100;
+            score += bonusPoints;
+            updateScore();
+            showMessage(`关卡完成! +${bonusPoints}`, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2, 'rgba(46, 204, 113, 0.9)', 2000);
+            
+            levelCompleteMessage.style.display = 'block';
+        }
+        
+        // 更新得分显示
+        function updateScore() {
+            scoreElement.textContent = score;
+        }
+        
+        // 更新生命显示
+        function updateLives() {
+            livesElement.textContent = lives;
+        }
+        
+        // 更新关卡显示
+        function updateLevel() {
+            levelElement.textContent = level;
+        }
+        
+        // 更新连击显示
+        function updateCombo() {
+            comboElement.textContent = comboCount;
+        }
+        
+        // 调整颜色亮度的辅助函数
+        function shadeColor(color, percent) {
+            let R = parseInt(color.substring(1, 3), 16);
+            let G = parseInt(color.substring(3, 5), 16);
+            let B = parseInt(color.substring(5, 7), 16);
+
+            R = parseInt(R * (100 + percent) / 100);
+            G = parseInt(G * (100 + percent) / 100);
+            B = parseInt(B * (100 + percent) / 100);
+
+            R = (R < 255) ? R : 255;
+            G = (G < 255) ? G : 255;
+            B = (B < 255) ? B : 255;
+
+            R = Math.round(R);
+            G = Math.round(G);
+            B = Math.round(B);
+
+            const RR = ((R.toString(16).length === 1) ? "0" + R.toString(16) : R.toString(16));
+            const GG = ((G.toString(16).length === 1) ? "0" + G.toString(16) : G.toString(16));
+            const BB = ((B.toString(16).length === 1) ? "0" + B.toString(16) : B.toString(16));
+
+            return "#" + RR + GG + BB;
+        }
+        
+        // 游戏动画循环
+        function animate() {
+            if (gameState === 'playing') {
+                update();
+                draw();
+                requestAnimationFrame(animate);
+            } else if (gameState === 'paused') {
+                // 即使暂停，也要继续绘制粒子效果
+                updateParticles();
+                drawParticles();
+                drawStatus(); // 确保状态信息仍然显示
+                requestAnimationFrame(animate);
+            } else if (particles.length > 0) {
+                // 当游戏状态不是playing或paused时，如果仍有粒子效果需要显示，继续更新和绘制
+                updateParticles();
+                drawParticles();
+                requestAnimationFrame(animate);
+            }
+        }
+        
+        // 启动游戏
+        window.onload = initGame;
+    </script>
+</body>
+</html>

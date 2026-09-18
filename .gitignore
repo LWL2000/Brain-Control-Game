@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Runtime data and models
+eeg_data/
+SSVEP/eeg_data/
+SSVEP/eyetrax_models/
+*.csv
+*.pkl
+*.npy
+*.npz
+
+# Build outputs
+dist/
+build/
+runtime/
+*.spec
+*.rar
+*.zip
+
+# Local config and IDE
+.vscode/
+.idea/
+*.log
+
+# Optional external dependencies
+external/
+
+# OS files
+Thumbs.db
+.DS_Store
+

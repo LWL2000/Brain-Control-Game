@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SSVEP 脑控小游戏合集</title>
+    <link rel="stylesheet" href="common.css">
+</head>
+<body>
+    <main class="hub">
+        <header class="hub-header">
+            <div class="hub-kicker">SSVEP WebSocket Games</div>
+            <h1>脑控小游戏合集</h1>
+            <p class="hub-lead">8 个小游戏都按 SSVEP 识别节奏重新设计：没有抢反应的倒计时，只有收到一次左/动作/右指令后才推进一步。默认连接地址为 ws://localhost:8767，可直接配合现有 SSVEP 控制程序使用。</p>
+        </header>
+
+        <section class="game-grid" aria-label="游戏列表">
+            <a class="game-link" href="1_space_shooter.html">
+                <div>
+                    <h2>太空打陨石</h2>
+                    <p>选航道、发射，敌机只在指令后推进。</p>
+                </div>
+                <div class="tag-row"><span class="tag">左/动作/右</span><span class="tag">回合射击</span></div>
+            </a>
+            <a class="game-link" href="2_coin_catcher.html">
+                <div>
+                    <h2>接金币躲炸弹</h2>
+                    <p>物品暂停等待，移动篮子后确认接或躲。</p>
+                </div>
+                <div class="tag-row"><span class="tag">左/动作/右</span><span class="tag">分拣</span></div>
+            </a>
+            <a class="game-link" href="3_lane_racer.html">
+                <div>
+                    <h2>三车道赛车</h2>
+                    <p>看清下一段路况，选好车道后前进一步。</p>
+                </div>
+                <div class="tag-row"><span class="tag">三车道</span><span class="tag">规划</span></div>
+            </a>
+            <a class="game-link" href="4_frogger.html">
+                <div>
+                    <h2>青蛙过河</h2>
+                    <p>横向找空隙，向前跳跃，逐关穿过车流。</p>
+                </div>
+                <div class="tag-row"><span class="tag">左/动作/右</span><span class="tag">慢节奏</span></div>
+            </a>
+            <a class="game-link" href="5_whack_mole.html">
+                <div>
+                    <h2>三轨打地鼠</h2>
+                    <p>三个指令分别对应左洞、中洞、右洞。</p>
+                </div>
+                <div class="tag-row"><span class="tag">左/动作/右</span><span class="tag">直接映射</span></div>
+            </a>
+            <a class="game-link" href="6_rhythm_taps.html">
+                <div>
+                    <h2>节奏音符</h2>
+                    <p>每个音符固定等待，识别正确后进入下一拍。</p>
+                </div>
+                <div class="tag-row"><span class="tag">左/动作/右</span><span class="tag">慢拍</span></div>
+            </a>
+            <a class="game-link" href="7_snake_turn.html">
+                <div>
+                    <h2>贪吃蛇转向版</h2>
+                    <p>左右只调整朝向，动作指令才前进一步。</p>
+                </div>
+                <div class="tag-row"><span class="tag">左/动作/右</span><span class="tag">经典</span></div>
+            </a>
+            <a class="game-link" href="8_maze_treasure.html">
+                <div>
+                    <h2>迷宫寻宝</h2>
+                    <p>左右转向并前进，收齐宝石后抵达出口。</p>
+                </div>
+                <div class="tag-row"><span class="tag">左/动作/右</span><span class="tag">策略</span></div>
+            </a>
+        </section>
+
+        <nav class="doc-links" aria-label="文档">
+            <a class="doc-link" href="README.md">总说明</a>
+            <a class="doc-link" href="docs/游戏使用文档.md">游戏使用文档</a>
+            <a class="doc-link" href="docs/SSVEP接入说明.md">SSVEP 接入说明</a>
+        </nav>
+    </main>
+</body>
+</html>
